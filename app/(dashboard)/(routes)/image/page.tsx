@@ -25,6 +25,7 @@ import { Card, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useProModal } from '@/hooks/use-pro-modal';
+import toast from 'react-hot-toast';
 const CodePage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,6 +51,8 @@ const CodePage = () => {
 
       if (error?.response?.status === 403) {
         proModal.onOpen();
+      } else {
+        toast.error('Something went wrong');
       }
     } finally {
       router.refresh();

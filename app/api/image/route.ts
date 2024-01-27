@@ -2,6 +2,7 @@ import OpenAi from 'openai';
 import { auth } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 import { checkApiLimit, incrementApiLimit } from '@/lib/api-limit';
+import { checkoutSubscription } from '@/lib/subscription';
 const openAi = new OpenAi({
   apiKey: process.env.OPEN_AI_API_KEY,
 });
@@ -26,7 +27,8 @@ export async function POST(req: Request) {
       return new NextResponse('OpenAi API key not configured', { status: 401 });
     }
     const freeTrial = await checkApiLimit();
-    if (!freeTrial) {
+    const isPro = await checkoutSubscription();
+    if (!freeTrial && !isPro) {
       return new NextResponse(
         'Free trial has expired. Please upgrade to pro.',
         { status: 403 },
@@ -39,8 +41,9 @@ export async function POST(req: Request) {
       quality: 'standard',
       n: parseInt(amount, 10),
     });
-
-    await incrementApiLimit();
+    if (!isPro) {
+      await incrementApiLimit();
+    }
     return NextResponse.json(response.data);
   } catch (error) {
     console.log(['ERROR_IN_CONVERSATION'], error);

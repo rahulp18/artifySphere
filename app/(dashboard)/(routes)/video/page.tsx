@@ -15,6 +15,7 @@ import Empty from '@/components/empty';
 import Loader from '@/components/loader';
 import { useRouter } from 'next/navigation';
 import { useProModal } from '@/hooks/use-pro-modal';
+import toast from 'react-hot-toast';
 
 const VideoPage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,6 +37,8 @@ const VideoPage = () => {
       // OPEN PRO MODEL
       if (error?.response?.status === 403) {
         proModal.onOpen();
+      } else {
+        toast.error('Something went wrong');
       }
       console.log(error);
     } finally {

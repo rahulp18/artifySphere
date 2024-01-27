@@ -1,4 +1,5 @@
 import { checkApiLimit, incrementApiLimit } from '@/lib/api-limit';
+import { checkoutSubscription } from '@/lib/subscription';
 import { auth } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
@@ -18,7 +19,8 @@ export async function POST(req: Request) {
       return new NextResponse('Prompts Required!', { status: 401 });
     }
     const freeTrial = await checkApiLimit();
-    if (!freeTrial) {
+    const isPro = await checkoutSubscription();
+    if (!freeTrial && !isPro) {
       return new NextResponse(
         'Free trial has expired. Please upgrade to pro.',
         { status: 403 },
@@ -32,7 +34,9 @@ export async function POST(req: Request) {
         },
       },
     );
-    await incrementApiLimit();
+    if (!isPro) {
+      await incrementApiLimit();
+    }
     return NextResponse.json(response);
   } catch (error) {
     console.log(['ERROR_IN_MUSIC'], error);
